@@ -1,4 +1,6 @@
 .venv/
+samesh/.venv/
+pointcept/.venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/

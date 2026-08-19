@@ -10,7 +10,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "3d-sam-ai-test"
+name = "3d-sam-ai-test-samesh"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

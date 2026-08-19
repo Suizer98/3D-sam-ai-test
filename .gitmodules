@@ -1,3 +1,6 @@
 [submodule "third_party/samesh"]
 	path = third_party/samesh
 	url = https://github.com/gtangg12/samesh.git
+[submodule "third_party/pointcept"]
+	path = third_party/pointcept
+	url = https://github.com/Pointcept/Pointcept.git

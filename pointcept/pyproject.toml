@@ -1,0 +1,35 @@
+[project]
+name = "3d-sam-ai-test-pointcept"
+version = "0.1.0"
+description = "Isolated uv env for Pointcept (native 3D) experiments"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "numpy",
+    "trimesh<5",
+    "ninja",
+    "setuptools",
+    "wheel",
+    "h5py",
+    "pyyaml",
+    "addict",
+    "einops",
+    "scipy",
+    "plyfile",
+    "termcolor",
+    "timm",
+    "tqdm",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
+torchvision = { index = "pytorch-cu124" }
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
