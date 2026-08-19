@@ -29,7 +29,12 @@ def parse_args():
         "--input-root",
         type=Path,
         required=True,
-        help="Folder with coord.npy / strength.npy / segment.npy",
+        help="Dataset root produced by prepare_pointcept_input.py (contains <split>/<scene>/coord.npy)",
+    )
+    parser.add_argument(
+        "--split",
+        default="val",
+        help="Split folder inside --input-root",
     )
     parser.add_argument(
         "--save-path",
@@ -41,6 +46,17 @@ def parse_args():
         "--num-gpus",
         type=int,
         default=1,
+    )
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=4,
+        help="Dataloader workers (config default of 24 is tuned for training)",
+    )
+    parser.add_argument(
+        "--enable-flash",
+        action="store_true",
+        help="Keep flash attention on (requires flash_attn to be installed)",
     )
     parser.add_argument(
         "--dry-run",
@@ -63,13 +79,30 @@ def main():
         raise FileNotFoundError(f"Config not found: {args.config_file}")
     if not args.checkpoint.exists():
         raise FileNotFoundError(f"Checkpoint not found: {args.checkpoint}")
-    if not args.input_root.exists():
-        raise FileNotFoundError(f"Input root not found: {args.input_root}")
+    split_dir = args.input_root / args.split
+    if not split_dir.is_dir():
+        raise FileNotFoundError(
+            f"Split folder not found: {split_dir}\n"
+            "  Run src/prepare_pointcept_input.py first"
+        )
 
     args.save_path.mkdir(parents=True, exist_ok=True)
 
     env = os.environ.copy()
     env["PYTHONPATH"] = str(pointcept_root)
+
+    data_root = args.input_root.resolve()
+    options = [
+        f"save_path={args.save_path.resolve()}",
+        f"weight={args.checkpoint.resolve()}",
+        f"num_worker={args.num_workers}",
+        "enable_wandb=false",
+        f"data_root={data_root}",
+        f"data.test.data_root={data_root}",
+        f"data.test.split={args.split}",
+    ]
+    if not args.enable_flash:
+        options.append("model.backbone.enable_flash=false")
 
     cmd = [
         "python",
@@ -79,9 +112,7 @@ def main():
         "--num-gpus",
         str(args.num_gpus),
         "--options",
-        f"save_path={args.save_path.resolve()}",
-        f"weight={args.checkpoint.resolve()}",
-        f"data_root={args.input_root.resolve()}",
+        *options,
     ]
 
     print(" ".join(cmd))

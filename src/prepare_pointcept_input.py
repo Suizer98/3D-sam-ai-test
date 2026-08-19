@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
@@ -7,7 +8,9 @@ import trimesh
 
 def parse_args():
     repo_root = Path(__file__).resolve().parents[1]
-    parser = argparse.ArgumentParser(description="Sample a mesh into Pointcept npy inputs")
+    parser = argparse.ArgumentParser(
+        description="Sample a mesh into a ScanNet-style Pointcept dataset folder"
+    )
     parser.add_argument(
         "--mesh",
         type=Path,
@@ -24,9 +27,35 @@ def parse_args():
         "--out-dir",
         type=Path,
         default=None,
-        help="Output directory (default: cache/pointcept_input/<mesh_stem>)",
+        help="Dataset root (default: cache/pointcept_input/<mesh_stem>)",
+    )
+    parser.add_argument(
+        "--split",
+        default="val",
+        help="Split folder name the Pointcept dataset will read",
+    )
+    parser.add_argument(
+        "--scene-name",
+        default=None,
+        help="Scene folder name (default: mesh stem)",
+    )
+    parser.add_argument(
+        "--target-extent",
+        type=float,
+        default=10.0,
+        help="Rescale so the largest axis extent equals this many metres; 0 keeps world scale",
     )
     return parser.parse_args()
+
+
+def sample_colors(mesh, face_ids):
+    visual = mesh.visual
+    try:
+        if hasattr(visual, "to_color"):
+            visual = visual.to_color()
+        return np.asarray(visual.face_colors, dtype=np.float32)[face_ids, :3]
+    except Exception:
+        return np.full((len(face_ids), 3), 128.0, dtype=np.float32)
 
 
 def main():
@@ -35,11 +64,13 @@ def main():
     if not mesh_path.exists():
         raise FileNotFoundError(f"Mesh not found: {mesh_path}")
 
-    out_dir = args.out_dir
-    if out_dir is None:
-        repo_root = Path(__file__).resolve().parents[1]
-        out_dir = repo_root / "cache" / "pointcept_input" / mesh_path.stem
-    out_dir.mkdir(parents=True, exist_ok=True)
+    repo_root = Path(__file__).resolve().parents[1]
+    dataset_root = args.out_dir
+    if dataset_root is None:
+        dataset_root = repo_root / "cache" / "pointcept_input" / mesh_path.stem
+    scene_name = args.scene_name or mesh_path.stem
+    scene_dir = dataset_root / args.split / scene_name
+    scene_dir.mkdir(parents=True, exist_ok=True)
 
     mesh = trimesh.load_mesh(str(mesh_path), force="mesh")
     if mesh.is_empty:
@@ -47,16 +78,34 @@ def main():
 
     points, face_ids = trimesh.sample.sample_surface_even(mesh, args.num_points)
     points = np.asarray(points, dtype=np.float32)
-    strength = np.ones((points.shape[0],), dtype=np.float32)
-    segment = np.zeros((points.shape[0],), dtype=np.int32)
+    face_ids = np.asarray(face_ids, dtype=np.int64)
+    colors = sample_colors(mesh, face_ids)
+    normals = np.asarray(mesh.face_normals, dtype=np.float32)[face_ids]
 
-    np.save(out_dir / "coord.npy", points)
-    np.save(out_dir / "strength.npy", strength)
-    np.save(out_dir / "segment.npy", segment)
-    np.save(out_dir / "face_ids.npy", np.asarray(face_ids, dtype=np.int32))
+    center = points.mean(axis=0)
+    scale = 1.0
+    extent = float(np.max(points.max(axis=0) - points.min(axis=0)))
+    if args.target_extent > 0 and extent > 0:
+        scale = args.target_extent / extent
+    coord = ((points - center) * scale).astype(np.float32)
 
-    print(f"Wrote Pointcept input to {out_dir}")
-    print(f"coord.npy shape={points.shape}")
+    np.save(scene_dir / "coord.npy", coord)
+    np.save(scene_dir / "color.npy", colors.astype(np.float32))
+    np.save(scene_dir / "normal.npy", normals)
+    np.save(scene_dir / "face_ids.npy", face_ids.astype(np.int32))
+
+    meta = {
+        "mesh": str(mesh_path),
+        "num_points": int(coord.shape[0]),
+        "world_extent": extent,
+        "center": center.tolist(),
+        "scale": scale,
+    }
+    (scene_dir / "meta.json").write_text(json.dumps(meta, indent=2))
+
+    print(f"Wrote Pointcept dataset to {dataset_root}")
+    print(f"scene: {args.split}/{scene_name}, coord.npy shape={coord.shape}")
+    print(f"world extent {extent:.2f} m scaled by {scale:.6f}")
 
 
 if __name__ == "__main__":

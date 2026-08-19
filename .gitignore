@@ -8,8 +8,8 @@ __pycache__/
 .mypy_cache/
 setup_log.txt
 
-checkpoints/*.pt
-checkpoints/*.pth
+checkpoints/**/*.pt
+checkpoints/**/*.pth
 outputs/
 cache/
 datasets/*.zip
