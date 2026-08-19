@@ -1,0 +1,40 @@
+[project]
+name = "3d-sam-ai-test"
+version = "0.1.0"
+description = "SAMesh auto mesh segmentation experiments"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas",
+    "omegaconf",
+    "igraph",
+    "networkx",
+    "pyrender",
+    "pymeshlab",
+    "trimesh<5",
+    "lightning",
+    "tqdm",
+    "scikit-learn",
+    "natsort",
+    "numpy==1.26.4",
+    "torch==2.3.1",
+    "torchvision==0.18.1",
+    "torchtyping",
+    "matplotlib",
+    "opencv-python",
+    "transformers<5",
+    "gdown",
+    "setuptools",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu118" }
+torchvision = { index = "pytorch-cu118" }
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true

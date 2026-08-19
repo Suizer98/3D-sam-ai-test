@@ -1,0 +1,24 @@
+[
+  {
+    "file": {
+      "name": "Open_Pit_Mine.glb",
+      "path": "H:/Others/Backup from 1TB Anvita HDD/Orissa/Data/4_Tiringpahada/PointCloud_WS/Data_WS/Koustav_WS/Open_Pit_Mine.glb"
+    },
+    "crs": {
+      "code": "EPSG:32644",
+      "description": "WGS 84 / UTM zone 44N"
+    },
+    "metadata": {
+      "description": "3D model of an open-pit mine created from point cloud data.",
+      "creator": "CBAI",
+      "creation_date": "2024-08-05",
+      "source": {
+        "format": "PLY",
+        "path": "H:/Others/Backup from 1TB Anvita HDD/Orissa/Data/4_Tiringpahada/PointCloud_WS/Data_WS/3d_map.ply"
+      }
+    },
+    "position":[85.40098373553582, 21.93062635270207],
+    "origincenter": [85.40098373553582, 21.93062635270207]
+  },
+  {"coordinates":[85.40098373553582, 21.93062635270207]}
+]

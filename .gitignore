@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+setup_log.txt
+
+checkpoints/*.pt
+checkpoints/*.pth
+outputs/
+cache/
+datasets/*.zip
+datasets/*/
+
+*.glb
+*.ply
+*.las
+*.laz
+
+# keep local mine mesh tracked only if small; ignore huge binaries by default
+data/*.obj
+data/*.glb
+data/*.ply
+!data/MetaData.json
