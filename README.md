@@ -1,6 +1,14 @@
 # 3D SAM AI Test
 
-Auto mesh part segmentation with Segment Any Mesh (SAM2).
+Label an open-pit mine mesh two ways: SAMesh (SAM2 part segmentation) and Pointcept PTv3 (native 3D ScanNet semantics).
+
+SAMesh:
+
+![SAMesh open-pit mesh](docs/samesh.jpeg)
+
+Pointcept:
+
+![Pointcept open-pit mesh](docs/pointcept.jpeg)
 
 ## Setup
 
@@ -71,10 +79,6 @@ uv run --project ~/3D-sam-ai-test/pointcept python setup.py install
 ```
 
 PTv3 configs may run without `pointops` (that lib is mainly PTv1/v2). Skip the setup.py step if you only use PT-v3.
-
-Do not run `uv pip install` until `uv sync` has created `pointcept/.venv`.
-Do not run `python setup.py` from inside `pointcept/` — that folder has no `setup.py`.
-Do not add `torch-cluster` (or other PyG source packages) to `pointcept/pyproject.toml`. Install the PyG wheels with `uv pip` as above. After that, use `uv run --no-sync` so uv does not try to compile them from source (`No module named 'torch'` in build isolation).
 
 Pointcept's import chain also needs `peft`, `transformers==4.50.3`, `wandb`, `torch_geometric` and `open3d`. They are in `pointcept/pyproject.toml`, so `uv sync` covers them.
 
